@@ -1,0 +1,98 @@
+
+# data related
+data_folder: "data/Eval_DoubleB"
+is_seq: true
+frames: 64           # frame length
+num_people: 2        # The number of people in this optimization
+
+single_view: false   # Single view input
+opt_cam: true       # Optimize camera parameters
+
+# output related
+output_folder: 'output'
+result_folder: 'results'
+visualize: False
+interactive: True
+save_meshes: true
+save_images: true
+
+# device
+use_cuda: true
+
+# annotation related
+#for annotation that contains 3D joint
+use_3d: false 
+#if the model is smpl, the hip is not for supervision
+use_hip: true 
+dataset: 'offline'
+interpenetration: false
+use_joints_conf: true
+
+# model related
+model_folder: 'models'
+model_type: smplhalpe #'smpllsp' # smpl smpllsp smplhalpe
+float_dtype: "float32"
+gender: neutral # male female neutral
+
+#prior related
+use_vposer: true  # Vposer
+use_motionprior: false # MotionPrior
+
+prior_folder: 'priors'
+body_prior_type: 'l2'
+
+#weight related
+data_weights:
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+body_pose_prior_weights:
+    # - 4.04e3
+    # - 4.04e2
+    # - 2.74e2
+    # - 3.78e1
+    - 4.04e3
+    - 4.04e2
+    - 57.4e0
+    - 1.78e0
+shape_weights:
+    - 1.0e2
+    - 5.0e1
+    - 1.0e1
+    - 0.5e1
+kinetic_weights:
+    - 1.0e3
+    - 5.0e2
+    - 2.5e2
+    - 2.0e2
+coll_loss_weights:
+    - 0.0
+    - 0.0
+    - 1000.0
+    - 4500.0
+
+# optimization related
+rho: 100
+optim_type: 'lbfgsls' #lbfgsls
+ftol: 1e-9
+gtol: 1e-9
+lr: 1.0
+# Max number of optimization iterations
+maxiters: 30
+
+# fixed parameter
+fix_scale: true
+scale: 1.
+fix_shape: false
+shape:
+- 0.101861
+- 0.848967
+- 0.848852
+- 2.45122
+- 0.381627
+- 0.387047
+- -0.350682
+- -0.195289
+- 0.307732
+- -0.305779
