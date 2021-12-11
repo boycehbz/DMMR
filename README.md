@@ -3,6 +3,8 @@ The code for 3DV 2021 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrate
 \[[Paper](https://arxiv.org/pdf/2110.10355.pdf)\]  \[[Video](https://www.bilibili.com/video/BV1Qq4y1d78S)\]
 
 ![figure](/images/teaser.jpg)
+
+
 ![figure](/images/video.gif)
 
 ## Dependencies
@@ -17,24 +19,34 @@ Step1: Download the official SMPL model from [SMPLify website](http://smplify.is
 
 Step2: Download the test data and trained motion prior from [here](http://smplify.is.tuebingen.mpg.de/) (**extraction code \[jhwp\]**) and put them in ```data``` folder.<br>
 
-Step3: Run ```python main.py --config cfg_files/fit_smpl.yaml```<br>
+Step3: Run 
+```bash
+python main.py --config cfg_files/fit_smpl.yaml
+```
 
 You can visualize the motions and cameras in optimization with the command:<br>
-```python main.py --config cfg_files/fit_smpl.yaml --visualize true```
+```bash
+python main.py --config cfg_files/fit_smpl.yaml --visualize true
+```
 
 <div align="center" width="100%">
       <img style="max-height: 300px; max-width: 300px;" align="center" width="100%" class="image" src="/images/optimize.gif" >
 </div>
 
 The code can also be used for motion capture with known cameras:<br>
-```python main.py --config cfg_files/fit_smpl.yaml --opt_cam false```
+```bash
+python main.py --config cfg_files/fit_smpl.yaml --opt_cam false
+```
 
 
 ## Results
 The fitted results will be saved in ```output```<br>
 You can visualize the estimated extrinsic camera parameters by running:<br>
-```python viz_cameras.py```
+```bash
+python viz_cameras.py
+```
 
+![figure](/images/results.jpg)
 
 ## Citation
 If you find this code useful for your research, please consider citing the paper.
