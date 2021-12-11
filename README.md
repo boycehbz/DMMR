@@ -8,7 +8,7 @@ The fitted results will be saved in ```output```
 
 ## Visualize extrinsic camera parameters
 ```python viz_cameras.py```
-![figure](/images/teaser.jpg)
+![figure](/images/optimize.gif)
 
 
 ```
