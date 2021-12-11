@@ -306,7 +306,11 @@ class SMPLifyLoss(nn.Module):
                     diff_embedding = ((pose_embedding[i] - mean_embedding).pow(2).sum() * self.body_pose_weight ** 2)
                     pprior_loss += diff_embedding
             elif use_motionprior:
-                pprior_loss = (pose_embedding.pow(2).sum() * (self.body_pose_weight / pose_embedding.size(0)) ** 2)
+                pprior_loss = (pose_embedding.pow(2).sum() * self.body_pose_weight  ** 2)
+                for i, ind in enumerate(self.index):
+                    mean_embedding = torch.mean(pose_embedding[ind], dim=0).reshape(1, -1)
+                    diff_embedding = ((pose_embedding[i] - mean_embedding).pow(2).sum() * self.body_pose_weight ** 2)
+                    pprior_loss += diff_embedding
             else:
                 pprior_loss = 0
 

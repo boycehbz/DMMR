@@ -6,7 +6,7 @@ frames: 64           # frame length
 num_people: 2        # The number of people in this optimization
 
 single_view: false   # Single view input
-opt_cam: false       # Optimize camera parameters
+opt_cam: true       # Optimize camera parameters
 
 # output related
 output_folder: 'output'
@@ -35,8 +35,8 @@ float_dtype: "float32"
 gender: neutral # male female neutral
 
 #prior related
-use_vposer: true  # Vposer
-use_motionprior: false # MotionPrior
+use_vposer: false  # Vposer
+use_motionprior: true # MotionPrior
 
 prior_folder: 'priors'
 body_prior_type: 'l2'

@@ -50,14 +50,11 @@ def load_model(dataset_obj, setting, **kwarg):
     # load vposer
     vposer = None
     if kwarg.get('use_vposer'):
-        vposer_ckpt = osp.expandvars(kwarg.get('prior_folder'))
-        vposer = load_vposer(vposer_ckpt, vp_model='snapshot')
+        vposer = load_vposer()
         vposer = vposer.to(device=device)
         vposer.eval()
     elif kwarg.get('use_motionprior'):
-        vposer_ckpt = osp.expandvars(kwarg.get('prior_folder'))
-        # vposer = load_motionprior(vposer_ckpt, vp_model='snapshot')
-        vposer = load_motionpriorHP(vposer_ckpt, vp_model='snapshot')
+        vposer = load_motionpriorHP()
         vposer = vposer.to(device=device)
         vposer.eval()
 

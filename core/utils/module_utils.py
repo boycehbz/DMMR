@@ -544,6 +544,9 @@ def IOU(A, B):
     return cross/(SA + SB - cross)
 
 def extris_est(spin, data, data_folder, intris):
+    """
+    Estimating the initial camera poses via SPIN
+    """
     from core.utils.module_utils import joint_projection
     img_path = data['img_path']
     keypoints = data['keypoints']
@@ -555,11 +558,11 @@ def extris_est(spin, data, data_folder, intris):
         joints = []
         joints2d = []
         verts = []
-        keyps = [keypoints[v][f][idx] for v in range(len(keypoints)) if keypoints[v][f][idx] is not None]
+        keyps = [keypoints[v][f][idx] for v in range(len(keypoints)) if keypoints[v][f][idx][:,2].max() > 0]
         if len(keyps) < len(keypoints):
             continue
         for v, (img, keyp) in enumerate(zip(img_path, keypoints)):
-            if keyp[f][idx] is None:
+            if keyp[f][idx][:,2].max() < 1e-3:
                 break
             img = os.path.join(data_folder, 'images', img[f])
             keyp = keyp[f][idx]
@@ -571,9 +574,6 @@ def extris_est(spin, data, data_folder, intris):
         
         if len(joints) < 1:
             continue
-        # rt = np.array([[-1,0,0],[0,0,-1],[0,-1,0]])
-        # ref_joints = np.dot(rt, joints[0][:-2].T).T
-        # ref_mesh = np.dot(rt, verts[0].T).T
         ref_joints = joints[0][:-2]
         ref_mesh = verts[0]
 
@@ -610,11 +610,6 @@ def extris_est(spin, data, data_folder, intris):
         ious = np.array(ious)
         if ious.min() > 0.4:
             break
-
-    # extris[6] = extris[11]
-    # extris[8] = extris[27]
-    # extris[17] = extris[10]
-    # extris[29] = extris[11]
 
     if False:
         from core.utils.render import Renderer
@@ -681,8 +676,6 @@ def load_camera(data, setting, data_folder, **kwarg):
         extris, intris = load_camera_para(intri_path)
         trans, rot = get_rot_trans(extris, photoscan=False)
 
-    extris[:,:3,3] = extris[:,:3,3] / 1000.0
-
     views = len(intris)
     camera = []
     for v in range(views):
@@ -700,7 +693,7 @@ def load_camera(data, setting, data_folder, **kwarg):
         spin = SPIN(device=device)
         extris = extris_est(spin, data, data_folder, intris)
 
-        # save_camparam('est_panoptic_cam.txt', intris, extris)
+        # save_camparam('init_cam.txt', intris, extris)
         trans, rot = get_rot_trans(extris, photoscan=False)
         for cam, R, t in zip(camera, rot, trans):
             R = torch.tensor(R, dtype=dtype).unsqueeze(0)

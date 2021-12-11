@@ -51,25 +51,14 @@ def load_motionprior(expr_dir, vp_model='snapshot'):
 
     return vposer_pt
 
-def load_motionpriorHP(expr_dir, vp_model='snapshot'):
-    '''
-
-    :param expr_dir:
-    :param vp_model: either 'snapshot' to use the experiment folder's code or a VPoser imported module, e.g.
-    from human_body_prior.train.vposer_smpl import VPoser, then pass VPoser to this function
-    :param if True will load the model definition used for training, and not the one in current repository
-    :return:
-    '''
+def load_motionpriorHP():
     import importlib
     import os
     import torch
     from core.model.MotionVAE_HP import MotionVAE_HP
 
-    # settings of Vposer++
-    num_neurons = 512
-    latentD = 32
-    data_shape = [1,23,3]
-    trained_model_fname = expid2model(expr_dir)
+    # settings of Motion Prior
+    trained_model_fname = 'data/motionprior_hp.pkl'
     
     vposer_pt = MotionVAE_HP(latentD=32)
 

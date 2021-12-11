@@ -20,30 +20,22 @@ def expid2model(expr_dir):
 
     return best_model_fname
 
-def load_vposer(expr_dir, vp_model='snapshot'):
-    '''
-
-    :param expr_dir:
-    :param vp_model: either 'snapshot' to use the experiment folder's code or a VPoser imported module, e.g.
-    from human_body_prior.train.vposer_smpl import VPoser, then pass VPoser to this function
-    :param if True will load the model definition used for training, and not the one in current repository
-    :return:
-    '''
+def load_vposer():
     import importlib
     import os
     import torch
-    from model.VPoser import VPoser
+    from  core.model.VPoser import VPoser
 
     # settings of Vposer++
     num_neurons = 512
     latentD = 32
     data_shape = [1,23,3]
-    trained_model_fname = expid2model(expr_dir)
+    trained_model_fname = 'data/vposer_snapshot.pkl'
     
     vposer_pt = VPoser(num_neurons=num_neurons, latentD=latentD, data_shape=data_shape)
 
     model_dict = vposer_pt.state_dict()
-    premodel_dict = torch.load(trained_model_fname).state_dict()
+    premodel_dict = torch.load(trained_model_fname)
     premodel_dict = {k: v for k ,v in premodel_dict.items() if k in model_dict}
     model_dict.update(premodel_dict)
     vposer_pt.load_state_dict(model_dict)
