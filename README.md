@@ -15,11 +15,14 @@ Windows or Linux, Python3
 
 
 ## Getting Started
-Step1: Download the official SMPL model from [SMPLify website](http://smplify.is.tuebingen.mpg.de/) and put it in ```models/smpl``` folder. (see [models/smpl/readme.txt](./models/smpl/readme.txt))<br>
+**Step1:** 
+Download the official SMPL model from [SMPLify website](http://smplify.is.tuebingen.mpg.de/) and put it in ```models/smpl```. (see [models/smpl/readme.txt](./models/smpl/readme.txt))<br>
 
-Step2: Download the test data and trained motion prior from [here](http://smplify.is.tuebingen.mpg.de/) (**extraction code \[jhwp\]**) and put them in ```data``` folder.<br>
+**Step2:** 
+Download the test data and trained motion prior from [here](http://smplify.is.tuebingen.mpg.de/) (**extraction code \[jhwp\]**) and put them in ```data```.<br>
 
-Step3: Run 
+**Step3:**
+Run 
 ```bash
 python main.py --config cfg_files/fit_smpl.yaml
 ```
@@ -40,7 +43,7 @@ python main.py --config cfg_files/fit_smpl.yaml --opt_cam false
 
 
 ## Results
-The fitted results will be saved in ```output```<br>
+The fitted results will be saved in ```output```.<br>
 You can visualize the estimated extrinsic camera parameters by running:<br>
 ```bash
 python viz_cameras.py
