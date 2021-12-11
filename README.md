@@ -15,13 +15,13 @@ Windows or Linux, Python3
 
 
 ## Getting Started
-**Step1:** 
+**Step1:**<br>
 Download the official SMPL model from [SMPLify website](http://smplify.is.tuebingen.mpg.de/) and put it in ```models/smpl```. (see [models/smpl/readme.txt](./models/smpl/readme.txt))<br>
 
-**Step2:** 
-Download the test data and trained motion prior from [here](http://smplify.is.tuebingen.mpg.de/) (**extraction code \[jhwp\]**) and put them in ```data```.<br>
+**Step2:**<br>
+Download the test data and trained motion prior from [here](https://pan.baidu.com/s/1jHXXp7xuPAYWoivD60gPdA) (**extraction code \[jomn\]**) and put them in ```data```.<br>
 
-**Step3:**
+**Step3:**<br>
 Run 
 ```bash
 python main.py --config cfg_files/fit_smpl.yaml
