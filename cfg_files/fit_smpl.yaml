@@ -11,7 +11,7 @@ opt_cam: true       # Optimize camera parameters
 # output related
 output_folder: 'output'
 result_folder: 'results'
-visualize: True
+visualize: False
 interactive: True
 save_meshes: true
 save_images: true

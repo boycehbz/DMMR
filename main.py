@@ -50,8 +50,8 @@ def main(**args):
     print('Processing the data took: {}'.format(time_msg))
 
 if __name__ == "__main__":
-    sys.argv = ["", "--config=cfg_files/fit_smpl.yaml"
-    ]
+    # sys.argv = ["", "--config=cfg_files/fit_smpl.yaml"
+    # ]
     args = parse_config()
     main(**args)
 

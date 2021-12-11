@@ -51,13 +51,13 @@ class Visualization(object):
         for cam in cameras:
             self.visualize_cameras(cam.T, [0,0,1], viz=False)
         self.viewer.poll_events()
-        import cv2
-        image = self.viewer.capture_screen_float_buffer()
-        # o3d.io.write_image('data/render_img_%05d.png' % self.count, image,quality=-1)
-        # cv2.imshow("img", np.asarray(image))
-        cv2.imwrite('data/render_img_%05d.png' % self.count, np.asarray(image)[:,:,::-1]*255.)
-        # self.viewer.capture_screen_image('data/render_img_%05d.jpg' % self.count, do_render=False)
-        self.count += 1
+        # import cv2
+        # image = self.viewer.capture_screen_float_buffer()
+        # # o3d.io.write_image('data/render_img_%05d.png' % self.count, image,quality=-1)
+        # # cv2.imshow("img", np.asarray(image))
+        # cv2.imwrite('data/render_img_%05d.png' % self.count, np.asarray(image)[:,:,::-1]*255.)
+        # # self.viewer.capture_screen_image('data/render_img_%05d.jpg' % self.count, do_render=False)
+        # self.count += 1
 
     def visualize_points(self, points, color):
         point_cloud = o3d.geometry.PointCloud()
