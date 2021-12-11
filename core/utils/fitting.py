@@ -31,7 +31,8 @@ import torch.nn as nn
 
 from core.utils import module_utils
 import cv2
-
+from core.utils.visualization3d import Visualization
+from core.utils.module_utils import add_camera_mesh
 
 @torch.no_grad()
 class FittingMonitor():
@@ -48,6 +49,8 @@ class FittingMonitor():
         self.summary_steps = summary_steps
         self.body_color = body_color
         self.model_type = model_type
+        if self.visualize:
+            self.viz_tool = Visualization()
 
     def set_colors(self, vertex_color):
         batch_size = self.colors.shape[0]
@@ -56,8 +59,8 @@ class FittingMonitor():
             np.array(vertex_color).reshape(1, 3),
             [batch_size, 1])
 
-    def run_fitting(self, optimizer, closure, params, body_model,
-                    use_vposer=True, pose_embedding=None, vposer=None, use_motionprior=False,
+    def run_fitting(self, optimizer, closure, params, body_models,
+                    use_vposer=True, pose_embeddings=None, vposer=None, use_motionprior=False, cameras=None,
                     **kwargs):
         ''' Helper function for running an optimization process
             Parameters
@@ -105,21 +108,35 @@ class FittingMonitor():
                 break
 
             if self.visualize and n % self.summary_steps == 0:
-                body_pose = vposer.decode(
-                    pose_embedding, output_type='aa').view(
-                        1, -1) if use_vposer else None
+                joints = []
+                for model, pose_embedding in zip(body_models, pose_embeddings):
+                    if use_vposer:
+                        body_pose = vposer.decode(
+                            pose_embedding, output_type='aa').view(
+                                pose_embedding.shape[0], -1)
+                    elif use_motionprior:
+                        body_pose = vposer.decode(
+                            pose_embedding, t=pose_embedding.shape[0]).view(
+                                pose_embedding.shape[0], -1)
+                    else:
+                        body_pose = None
 
-                if append_wrists:
-                    wrist_pose = torch.zeros([body_pose.shape[0], 6],
-                                             dtype=body_pose.dtype,
-                                             device=body_pose.device)
-                    body_pose = torch.cat([body_pose, wrist_pose], dim=1)
-                model_output = body_model(
-                    return_verts=True, body_pose=body_pose)
-                vertices = model_output.vertices.detach().cpu().numpy()
-
-                self.mv.update_mesh(vertices.squeeze(),
-                                    body_model.faces)
+                    torch.cuda.empty_cache()
+                    body_model_output = model(return_verts=False,
+                                                body_pose=body_pose,
+                                                return_full_pose=False)
+                    joints.append(body_model_output.joints.detach().cpu().numpy())
+                joints = np.concatenate(joints)[:,5:17]
+                cam_meshes = []
+                for cam in cameras:
+                    extri = np.eye(4)
+                    rot = cv2.Rodrigues(cam.rotation.detach().cpu().numpy())[0]
+                    trans = cam.translation.detach().cpu().numpy()
+                    extri[:3,:3] = rot
+                    extri[:3,3] = trans
+                    cam_mesh = add_camera_mesh(extri, camerascale=0.1)
+                    cam_meshes.append(cam_mesh)
+                self.viz_tool.visualize_fitting(joints, cam_meshes)
 
             prev_loss = loss.item()
             # print('stage fitting loss: ', prev_loss)

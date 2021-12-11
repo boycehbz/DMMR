@@ -12,7 +12,7 @@ from core.init import init, load_model
 from core.utils.module_utils import save_results, load_camera
 from core.utils.init_guess import init_guess, fix_params
 from core.utils.non_linear_solver import non_linear_solver
-torch.backends.cudnn.enabled=False
+torch.backends.cudnn.enabled = False
 
 def main(**args):
 

@@ -1,5 +1,12 @@
-import os
+'''
+ @FileName    : motionprior.py
+ @EditTime    : 2021-12-11 18:01:07
+ @Author      : Buzhen Huang
+ @Email       : hbz@seu.edu.cn
+ @Description : 
+'''
 
+import os
 
 def expid2model(expr_dir):
     from configer import Configer

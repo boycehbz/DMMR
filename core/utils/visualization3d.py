@@ -6,13 +6,14 @@ class Visualization(object):
     def __init__(self) -> None:
         # set viewer
         self.viewer = o3d.visualization.Visualizer() #O3DVisualizer Visualizer
-        window_size = 600
+        window_size = 1200
         self.viewer.create_window(
             width=window_size + 1, height=window_size + 1,
             window_name='result'
         )
+        self.count = 0
 
-    def visualize_cameras(self, points, color):
+    def visualize_cameras(self, points, color, viz=True):
         point_cloud1 = o3d.geometry.PointCloud()
         point_cloud2 = o3d.geometry.PointCloud()
         lineset = o3d.geometry.LineSet()
@@ -22,7 +23,8 @@ class Visualization(object):
 
             lineset_one = lineset.create_from_point_cloud_correspondences(point_cloud1, point_cloud2, [(0, 0)])
             self.viewer.add_geometry(lineset_one.paint_uniform_color(color))
-            self.viewer.poll_events()
+            if viz:
+                self.viewer.poll_events()
 
         # self.viewer.add_geometry(point_cloud)
         # for i in range(len(points)-1):
@@ -32,6 +34,30 @@ class Visualization(object):
         #     self.viewer.update_geometry(point_cloud)
         #     # self.viewer.update_geometry(mesh_gt)
         #     self.viewer.poll_events()
+
+    def visualize_fitting(self, points, cameras):
+        self.viewer.clear_geometries()
+        points = points.reshape(-1, 3)
+        point_cloud = o3d.geometry.PointCloud()
+        point_cloud.points = o3d.utility.Vector3dVector(points)
+        self.viewer.add_geometry(point_cloud)
+
+        point_cloud.points = o3d.utility.Vector3dVector(points)
+        # point_cloud.paint_uniform_color([1,0,0])
+        # o3d.visualization.draw_geometries([point_cloud])
+        self.viewer.update_geometry(point_cloud)
+        # self.viewer.update_geometry(mesh_gt)
+        # time.sleep(1)
+        for cam in cameras:
+            self.visualize_cameras(cam.T, [0,0,1], viz=False)
+        self.viewer.poll_events()
+        import cv2
+        image = self.viewer.capture_screen_float_buffer()
+        # o3d.io.write_image('data/render_img_%05d.png' % self.count, image,quality=-1)
+        # cv2.imshow("img", np.asarray(image))
+        cv2.imwrite('data/render_img_%05d.png' % self.count, np.asarray(image)[:,:,::-1]*255.)
+        # self.viewer.capture_screen_image('data/render_img_%05d.jpg' % self.count, do_render=False)
+        self.count += 1
 
     def visualize_points(self, points, color):
         point_cloud = o3d.geometry.PointCloud()

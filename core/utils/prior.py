@@ -1,4 +1,10 @@
-# -*- coding: utf-8 -*-
+'''
+ @FileName    : prior.py
+ @EditTime    : 2021-12-11 18:01:19
+ @Author      : Buzhen Huang
+ @Email       : hbz@seu.edu.cn
+ @Description : 
+'''
 
 import os, glob
 import numpy as np

@@ -152,7 +152,7 @@ def non_linear_solver(
             body_optimizer,
             closure, final_params,
             models,
-            pose_embeddings=pose_embeddings, vposer=vposer,
+            pose_embeddings=pose_embeddings, vposer=vposer, cameras=cameras,
             use_vposer=use_vposer, use_motionprior=use_motionprior)
 
         if interactive:
