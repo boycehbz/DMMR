@@ -6,9 +6,13 @@ Set parameters in ```cfg_files/fit_smpl.yaml```, run ```python main.py```
 ## Results
 The fitted results will be saved in ```output```
 
+
+<div align="center" width="100%">
+      <img style="max-height: 500px; max-width: 500px;" align="center" width="100%" class="image" src="/images/optimize.gif" >
+</div>
+
 ## Visualize extrinsic camera parameters
 ```python viz_cameras.py```
-![figure](/images/optimize.gif)
 
 
 ```
