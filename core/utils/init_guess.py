@@ -776,57 +776,60 @@ def init_guess(setting, data, dataset_obj, frames_seq=1, use_torso=False, **kwar
     data['flags'] = flags
     return data
 
-def load_init(setting, data, dataset_obj, results, frames_seq=1, use_torso=False, **kwargs):
-    model = setting['model']
-    dtype = setting['dtype']
-    device = setting['device']
-    # if the loss of last frame is too large, we use init_guess to get initial value
-    if results['loss'] > 99999:
-        init_guess(setting, data, dataset_obj, frames_seq, use_torso=use_torso, **kwargs)
-        setting['seq_start'] = True
-        return
+# def load_init(setting, data, dataset_obj, results, frames_seq=1, use_torso=False, **kwargs):
+#     model = setting['model']
+#     dtype = setting['dtype']
+#     device = setting['device']
+#     # if the loss of last frame is too large, we use init_guess to get initial value
+#     if results['loss'] > 99999:
+#         init_guess(setting, data, dataset_obj, frames_seq, use_torso=use_torso, **kwargs)
+#         setting['seq_start'] = True
+#         return
 
-    init_t = torch.tensor(results['transl'], dtype=dtype)
-    init_r = torch.tensor(results['global_orient'], dtype=dtype)
-    init_s = torch.tensor(results['scale'], dtype=dtype)
-    init_shape = torch.tensor(results['betas'], dtype=dtype)
-    if kwargs.get('use_vposer'):
-        setting['pose_embedding'] = torch.tensor(results['pose_embedding'], dtype=dtype, device=device, requires_grad=True)
-    else:
-        # gmm prior, to do...
-        pass
-        #init_pose = torch.tensor(results['body_pose'], dtype=dtype)
+#     init_t = torch.tensor(results['transl'], dtype=dtype)
+#     init_r = torch.tensor(results['global_orient'], dtype=dtype)
+#     init_s = torch.tensor(results['scale'], dtype=dtype)
+#     init_shape = torch.tensor(results['betas'], dtype=dtype)
+#     if kwargs.get('use_vposer'):
+#         setting['pose_embedding'] = torch.tensor(results['pose_embedding'], dtype=dtype, device=device, requires_grad=True)
+#     else:
+#         # gmm prior, to do...
+#         pass
+#         #init_pose = torch.tensor(results['body_pose'], dtype=dtype)
 
-    # initial value
-    new_params = defaultdict(global_orient=init_r,
-                                # body_pose=body_mean_pose,
-                                transl=init_t,
-                                scale=init_s,
-                                betas=init_shape,
-                                )
-    model.reset_params(**new_params)
+#     # initial value
+#     new_params = defaultdict(global_orient=init_r,
+#                                 # body_pose=body_mean_pose,
+#                                 transl=init_t,
+#                                 scale=init_s,
+#                                 betas=init_shape,
+#                                 )
+#     model.reset_params(**new_params)
 
-    # visualize
-    if False:
-        extris = setting['extrinsics']
-        intris = setting['intrinsics']
-        import os
-        from utils.utils import joint_projection, surface_projection
-        if kwargs.get('use_vposer'):
-            vposer = setting['vposer']
-            init_pose = vposer.decode(
-                setting['pose_embedding'], output_type='aa').view(
-                    frames_seq, -1)
-        else:
-            init_pose = torch.zeros((frames_seq, 69), dtype=dtype, device=device)
-        model_output = model(return_verts=True, return_full_pose=True, body_pose=init_pose)
-        for i, (joints, verts) in enumerate(zip(model_output.joints.detach().cpu().numpy(), model_output.vertices.detach().cpu().numpy())):
-            for v in range(1):
-                img = cv2.imread(os.path.join(dataset_obj.img_folder, data['img_path'][v][i]))
-                surface_projection(verts, model.faces, joints, extris[v], intris[v], img, 5)
+#     # visualize
+#     if False:
+#         extris = setting['extrinsics']
+#         intris = setting['intrinsics']
+#         import os
+#         from utils.utils import joint_projection, surface_projection
+#         if kwargs.get('use_vposer'):
+#             vposer = setting['vposer']
+#             init_pose = vposer.decode(
+#                 setting['pose_embedding'], output_type='aa').view(
+#                     frames_seq, -1)
+#         else:
+#             init_pose = torch.zeros((frames_seq, 69), dtype=dtype, device=device)
+#         model_output = model(return_verts=True, return_full_pose=True, body_pose=init_pose)
+#         for i, (joints, verts) in enumerate(zip(model_output.joints.detach().cpu().numpy(), model_output.vertices.detach().cpu().numpy())):
+#             for v in range(1):
+#                 img = cv2.imread(os.path.join(dataset_obj.img_folder, data['img_path'][v][i]))
+#                 surface_projection(verts, model.faces, joints, extris[v], intris[v], img, 5)
 
 
 def fix_params(setting, scale=None, shape=None):
+    """
+    Use the fixed shape and scale parameters.
+    """
     dtype = setting['dtype']
     models = setting['model']
     for model in models:

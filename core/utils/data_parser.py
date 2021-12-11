@@ -13,7 +13,7 @@ from __future__ import division
 import sys
 import os
 import os.path as osp
-
+import platform
 import json
 
 from collections import namedtuple
@@ -30,59 +30,31 @@ Keypoints = namedtuple('Keypoints',
 Keypoints.__new__.__defaults__ = (None,) * len(Keypoints._fields)
 
 
-def read_keypoints(keypoint_fn, use_hands=True, use_face=True,
-                   use_face_contour=False):
+def read_keypoints(keypoint_fn, num_people, num_joint):
+    if not os.path.exists(keypoint_fn):
+        keypoints = [np.zeros((num_joint, 3))] * num_people # keypoints may not exist
+        flags = np.zeros((num_people,))
+        valid = 0
+        return keypoints, flags, valid
+
     with open(keypoint_fn) as keypoint_file:
         data = json.load(keypoint_file)
-
+    valid = 1
     keypoints = []
-    gender_pd = []
-    gender_gt = []
     flags = np.zeros((len(data['people'])))
     for idx, person_data in enumerate(data['people']):
         if person_data is None:
-            body_keypoints = None
+            body_keypoints = np.zeros((num_joint, 3),
+                                    dtype=np.float32)
         else:
             flags[idx] = 1
             body_keypoints = np.array(person_data['pose_keypoints_2d'],
                                     dtype=np.float32)
             body_keypoints = body_keypoints.reshape([-1, 3])
-            if use_hands:
-                left_hand_keyp = np.array(
-                    person_data['hand_left_keypoints_2d'],
-                    dtype=np.float32).reshape([-1, 3])
-                right_hand_keyp = np.array(
-                    person_data['hand_right_keypoints_2d'],
-                    dtype=np.float32).reshape([-1, 3])
-
-                body_keypoints = np.concatenate(
-                    [body_keypoints, left_hand_keyp, right_hand_keyp], axis=0)
-            if use_face:
-                # TODO: Make parameters, 17 is the offset for the eye brows,
-                # etc. 51 is the total number of FLAME compatible landmarks
-                face_keypoints = np.array(
-                    person_data['face_keypoints_2d'],
-                    dtype=np.float32).reshape([-1, 3])[17: 17 + 51, :]
-
-                contour_keyps = np.array(
-                    [], dtype=body_keypoints.dtype).reshape(0, 3)
-                if use_face_contour:
-                    contour_keyps = np.array(
-                        person_data['face_keypoints_2d'],
-                        dtype=np.float32).reshape([-1, 3])[:17, :]
-
-                body_keypoints = np.concatenate(
-                    [body_keypoints, face_keypoints, contour_keyps], axis=0)
-
-            if 'gender_pd' in person_data:
-                gender_pd.append(person_data['gender_pd'])
-            if 'gender_gt' in person_data:
-                gender_gt.append(person_data['gender_gt'])
 
         keypoints.append(body_keypoints)
 
-    return Keypoints(keypoints=keypoints, gender_pd=gender_pd,
-                     gender_gt=gender_gt), flags
+    return keypoints[:num_people], flags[:num_people], valid
 
 def read_joints(keypoint_fn, use_hands=True, use_face=True,
                    use_face_contour=False):
@@ -257,43 +229,26 @@ class FittingData(Dataset):
 
     
     def read_item(self, img_paths):
-        """load keypoints according to img name"""
+        """Load keypoints according to img name"""
         keypoints = []
         total_flags = []
-        joints3d = None
         count = 0
-        for imgs in img_paths: # per camera
+        for imgs in img_paths:
             cam_keps = []
             cam_flag = []
             for img in imgs:
-                seq_name, cam_name, f_name = img.split('\\')
+                if platform.system() == 'Windows':
+                    seq_name, cam_name, f_name = img.split('\\')
+                else:
+                    seq_name, cam_name, f_name = img.split('/')
                 index = f_name.split('.')[0]
                 keypoint_fn = osp.join(self.keyp_folder, seq_name, cam_name, '%s_keypoints.json' %index)
-                if not os.path.exists(keypoint_fn):
-                    keypoints_ = [None] * self.num_people # keypoints may not exist
-                    flags = np.zeros((self.num_people,))
-                else:
-                    count += 1
-                    keyp_tuple, flags = read_keypoints(keypoint_fn, use_hands=self.use_hands,
-                                                use_face=self.use_face,
-                                                use_face_contour=self.use_face_contour)
-                    flags = flags[:self.num_people]
-                    if len(keyp_tuple.keypoints) < 1:
-                        return {}
-                    # keypoints_ = keyp_tuple.keypoints[0]
-                    # multi-person
-                    keypoints_ = keyp_tuple.keypoints
-
+                keypoints_, flags, valid = read_keypoints(keypoint_fn, self.num_people, self.NUM_BODY_JOINTS)
+                count += valid
 
                 cam_flag.append(flags)
                 cam_keps.append(keypoints_)
 
-                if self.use_3d and joints3d is None and os.path.exists(keypoint_fn):
-                    joints3d = read_joints(keypoint_fn, use_hands=self.use_hands,
-                                                use_face=self.use_face,
-                                                use_face_contour=self.use_face_contour)
-
-                    joints3d = joints3d.keypoints
             keypoints.append(cam_keps)
             total_flags.append(cam_flag)
 
@@ -304,7 +259,6 @@ class FittingData(Dataset):
         output_dict = { 'camparam': camparam,
                         'img_path': img_paths,
                         'keypoints': keypoints,
-                        '3d_joint': joints3d,
                         'flags':total_flags,
                         'count':count}
 

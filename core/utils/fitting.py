@@ -40,8 +40,6 @@ class FittingMonitor():
                  body_color=(1.0, 1.0, 0.9, 1.0),
                  model_type='smpl',
                  **kwargs):
-        # super(FittingMonitor, self).__init__()
-
         self.maxiters = maxiters
         self.ftol = ftol
         self.gtol = gtol
@@ -50,16 +48,6 @@ class FittingMonitor():
         self.summary_steps = summary_steps
         self.body_color = body_color
         self.model_type = model_type
-        
-    # def __enter__(self):
-    #     self.steps = 0
-    #     if self.visualize:
-    #         self.mv = MeshViewer(body_color=self.body_color)
-    #     return self
-
-    # def __exit__(self, exception_type, exception_value, traceback):
-    #     if self.visualize:
-    #         self.mv.close_viewer()
 
     def set_colors(self, vertex_color):
         batch_size = self.colors.shape[0]
@@ -143,8 +131,6 @@ class FittingMonitor():
                                gt_joints=None, loss=None,
                                joints_conf=None,
                                flags=None,
-                               gt_joints3d=None,
-                               joints3d_conf=None,
                                joint_weights=None,
                                return_verts=True, return_full_pose=False,
                                use_vposer=False, vposer=None,
@@ -153,7 +139,6 @@ class FittingMonitor():
                                create_graph=False,
                                use_3d=False,
                                **kwargs):
-        faces_tensor = body_models[0].faces_tensor.view(-1)
 
         # the vposer++ contains wrist
         append_wrists = False
@@ -161,6 +146,7 @@ class FittingMonitor():
             if backward:
                 optimizer.zero_grad()
 
+            # Get the joints and the skinning verts from the latent code
             body_model_outputs = []
             for model, pose_embedding in zip(body_models, pose_embeddings):
                 if use_vposer:
@@ -186,11 +172,8 @@ class FittingMonitor():
                 body_model_outputs.append(body_model_output)
             
             total_loss, loss_dict = loss(body_model_outputs, flags, camera=camera, body_models=body_models,
-                              gt_jointss=gt_joints,
-                              body_model_faces=faces_tensor,
+                              gt_joints=gt_joints,
                               joints_confs=joints_conf,
-                              gt_joints3d=gt_joints3d,
-                              joints3d_conf=joints3d_conf,
                               joint_weights=joint_weights,
                               pose_embeddings=pose_embeddings,
                               use_vposer=use_vposer,
@@ -199,21 +182,6 @@ class FittingMonitor():
 
             if backward:
                 total_loss.backward(retain_graph=False, create_graph=create_graph)
-                # clip grad for GRU based motion prior
-                # if use_motionprior:
-                #     for emb in pose_embeddings:
-                #         # nn.utils.clip_grad_value_(emb, 1e7)
-                #         print(emb.grad.max())
-                # if use_motionprior:
-                #     nn.utils.clip_grad_norm_(pose_embeddings, 1e6, norm_type=2)
-            # self.steps += 1
-            # if self.visualize and self.steps % self.summary_steps == 0:
-            #     model_output = body_model(return_verts=True,
-            #                               body_pose=body_pose)
-            #     vertices = model_output.vertices.detach().cpu().numpy()
-
-            #     self.mv.update_mesh(vertices.squeeze(),
-            #                         body_model.faces)
 
             return total_loss, loss_dict
 
@@ -241,19 +209,17 @@ class SMPLifyLoss(nn.Module):
                  body_pose_weight=0.0,
                  kinetic_weight=0.0,
                  shape_weight=0.0,
-                 bending_prior_weight=0.0,
                  coll_loss_weight=0.0,
                  reduction='sum',
                  frame_length=16,
                  use_3d=False,
+                 fix_shape=False,
                  **kwargs):
 
         super(SMPLifyLoss, self).__init__()
 
         self.use_joints_conf = use_joints_conf
         self.angle_prior = angle_prior
-        
-        self.use_3d = use_3d
 
         self.robustifier = module_utils.GMoF(rho=rho)
         self.rho = rho
@@ -262,7 +228,7 @@ class SMPLifyLoss(nn.Module):
 
         self.shape_prior = shape_prior
 
-        self.fix_shape = kwargs.get('fix_shape')
+        self.fix_shape = fix_shape
 
         self.frames = frame_length
         self.index = [[j for j in range(i-3, i+3) if j >=0 and j < self.frames] for i in range(self.frames)]
@@ -271,9 +237,6 @@ class SMPLifyLoss(nn.Module):
         if self.interpenetration:
             from sdf import SDF
             self.sdf = SDF()
-            # self.search_tree = search_tree
-            # self.tri_filtering_module = tri_filtering_module
-            # self.pen_distance = pen_distance
 
         self.register_buffer('data_weight',
                              torch.tensor(data_weight, dtype=dtype))
@@ -283,8 +246,6 @@ class SMPLifyLoss(nn.Module):
                              torch.tensor(shape_weight, dtype=dtype))
         self.register_buffer('kinetic_weight',
                              torch.tensor(kinetic_weight, dtype=dtype))
-        self.register_buffer('bending_prior_weight',
-                             torch.tensor(bending_prior_weight, dtype=dtype))
         if self.interpenetration:
             self.register_buffer('coll_loss_weight',
                                  torch.tensor(coll_loss_weight, dtype=dtype))
@@ -309,84 +270,46 @@ class SMPLifyLoss(nn.Module):
             boxes[i, 1, :] = vertices[i].max(dim=0)[0]
         return boxes
 
-    def forward(self, body_model_outputs, flags, camera, gt_jointss, joints_confs,
-                body_model_faces, joint_weights,
-                use_vposer=False, pose_embeddings=None, use_motionprior=False,
-                gt_joints3d=None, joints3d_conf=None, body_models=None,
+    def forward(self, body_model_outputs, flags, camera, gt_joints, joints_confs,
+                joint_weights, use_vposer=False, pose_embeddings=None, use_motionprior=False, body_models=None,
                 **kwargs):
 
         start = time.time()
         loss_dict = {'reproj':0., 'prior':0., 'shape':0., 'kinetic':0.}
         total_loss = 0
         frames, num_joints = body_model_outputs[0].joints.shape[:2]
-        num_person = len(body_model_outputs)
         num_views = len(camera)
-        for body_model_output, gt_joints, joints_conf, pose_embedding, body_model, flag in zip(body_model_outputs, gt_jointss, joints_confs, pose_embeddings, body_models, flags.permute((1,0))):
+        for p_id, (body_model_output, pose_embedding, body_model, flag) in enumerate(zip(body_model_outputs, pose_embeddings, body_models, flags.permute((1,0)))):
         
-            # project model to each view
+            # Re-projection error
             joints = body_model_output.joints.reshape(1, -1, 3)
-            projected_joints = []
-            for cam in camera:
-                projected_joints_ = cam(joints)
-                projected_joints.append(projected_joints_)
-            
-            weights = []
-            for conf in joints_conf:
-                # Calculate the weights for each joints
-                weights_ = (joint_weights.repeat(conf.size(0), 1) * conf
-                        if self.use_joints_conf else
-                        joint_weights).reshape(1,-1,1)
-                weights.append(weights_.repeat(1,1,2))
+            projected_joints = torch.cat([cam(joints) for cam in camera])
 
-            # Calculate the distance of the projected joints from
-            # the ground truth 2D detections
-            gt_joints = gt_joints.reshape(len(projected_joints), -1, 2)
-            joint_loss = 0.
-            for i in range(len(gt_joints)):
-                joint_diff = self.robustifier(gt_joints[i] - projected_joints[i])
-                joint_loss_ = (torch.sum(weights[i] ** 2 * joint_diff) *
-                            self.data_weight ** 2)
-                joint_loss += joint_loss_
-                if torch.isnan(joint_loss).sum():
-                    print(1)
+            confidences = joints_confs[:,:,p_id:p_id+1,:,None].repeat(1,1,1,1,2)
+            detected_joints = gt_joints[:,:,p_id:p_id+1:,:]
+            confidences = confidences.reshape(num_views, -1, 2)
+            detected_joints = detected_joints.reshape(num_views, -1, 2)
+
+            joint_diff = self.robustifier(projected_joints - detected_joints)
+
+            joint_loss = (torch.sum(confidences ** 2 * joint_diff) *
+                                        self.data_weight ** 2)
+
             joint_loss = joint_loss / num_views / frames
             loss_dict['reproj'] += int(joint_loss.data)
 
-            # 3d loss
-            joints3d_loss = 0.
-            if self.use_3d:
-                joints3d_conf = joints3d_conf.unsqueeze(dim=-1)
-                diff3d = self.robustifier(gt_joints3d - body_model_output.joints)
-                joints3d_loss = (torch.sum(joints3d_conf ** 2 * diff3d) *
-                            self.data_weight ** 2)
-
             # Calculate the loss from the Pose prior
             if use_vposer:
-                pprior_loss = (pose_embedding.pow(2).sum() *
-                            self.body_pose_weight ** 2)
-                #
-                # index = [[j for j in range(i-3, i+3) if j >=0 and j < pose_embedding.size(0)] for i in range(pose_embedding.size(0))]
+                pprior_loss = (pose_embedding.pow(2).sum() * self.body_pose_weight ** 2)
                 for i, ind in enumerate(self.index):
                     mean_embedding = torch.mean(pose_embedding[ind], dim=0).reshape(1, -1)
                     diff_embedding = ((pose_embedding[i] - mean_embedding).pow(2).sum() * self.body_pose_weight ** 2)
                     pprior_loss += diff_embedding
             elif use_motionprior:
-                # print(pose_embedding.max())
-                # pprior_loss = 0
-                # pprior_loss = (pose_embedding.pow(2).sum() *
-                #                self.body_pose_weight ** 2)
-                pprior_loss = (pose_embedding.pow(2).sum() *
-                            (self.body_pose_weight / pose_embedding.size(0)) ** 2)
-                # mean_embedding = torch.mean(pose_embedding, dim=0).reshape(1, -1).repeat(pose_embedding.size(0), 1)
-                # diff_embedding = ((pose_embedding - mean_embedding).pow(2).sum() * self.body_pose_weight ** 2)
-                # pprior_loss += diff_embedding
+                pprior_loss = (pose_embedding.pow(2).sum() * (self.body_pose_weight / pose_embedding.size(0)) ** 2)
             else:
-                pprior_loss = torch.sum(self.body_pose_prior(
-                    body_model_output.body_pose,
-                    body_model_output.betas)) * self.body_pose_weight ** 2
-                if float(pprior_loss) > 5e4:
-                    pprior_loss = 0.
-                pprior_loss += body_model_output.body_pose.pow(2).sum() * (self.body_pose_weight * 4) ** 2
+                pprior_loss = 0
+
             pprior_loss = pprior_loss / frames
             loss_dict['prior'] += int(pprior_loss.data)
 
@@ -394,18 +317,7 @@ class SMPLifyLoss(nn.Module):
             if not self.fix_shape:
                 shape_loss = torch.sum(self.shape_prior(
                     body_model_output.betas)) * self.shape_weight ** 2
-                # if use_vposer or use_motionprior:
-                #     shape_loss = shape_loss * pose_embedding.size(0)
             loss_dict['shape'] += int(shape_loss.data)
-            # Calculate the prior over the joint rotations. This a heuristic used
-            # to prevent extreme rotation of the elbows and knees
-            body_pose = body_model_output.full_pose[:, 3:66]
-
-            angle_prior_loss = 0.
-            # angle_prior_loss = torch.sum(
-            #     self.angle_prior(body_pose)) * self.bending_prior_weight
-            # if float(angle_prior_loss) > 1e4 and not use_vposer:
-            #     angle_prior_loss = 0.
 
             global_smooth_loss = 0.
             # index = [[j for j in range(i-3, i+3) if j >=0 and j < pose_embedding.size(0)] for i in range(pose_embedding.size(0))]
@@ -463,26 +375,8 @@ class SMPLifyLoss(nn.Module):
 
                     pen_loss += (self.coll_loss_weight * cur_loss.sum() / valid_people) ** 2
                     # print(pen_loss)
-            # if (self.interpenetration and self.coll_loss_weight.item() > 0):
-            #     batch_size = projected_joints.shape[0]
-            #     triangles = torch.index_select(
-            #         body_model_output.vertices, 1,
-            #         body_model_faces).view(batch_size, -1, 3, 3)
 
-            #     with torch.no_grad():
-            #         collision_idxs = self.search_tree(triangles)
-
-            #     # Remove unwanted collisions
-            #     if self.tri_filtering_module is not None:
-            #         collision_idxs = self.tri_filtering_module(collision_idxs)
-
-            #     if collision_idxs.ge(0).sum().item() > 0:
-            #         pen_loss = torch.sum(
-            #             self.coll_loss_weight *
-            #             self.pen_distance(triangles, collision_idxs))
-
-            total_loss += (joint_loss + joints3d_loss + pprior_loss + shape_loss +
-                        angle_prior_loss + pen_loss + global_smooth_loss + kinetic_loss)
+            total_loss += (joint_loss + pprior_loss + shape_loss + pen_loss + global_smooth_loss + kinetic_loss)
         end = time.time()
         loss_dict['time'] = (end - start)
         total_loss = total_loss / len(body_model_outputs)

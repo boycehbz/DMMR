@@ -10,6 +10,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
+import platform
 
 import numpy as np
 
@@ -315,16 +316,14 @@ class GMoF(nn.Module):
 
 
 def project_to_img(joints, verts, faces, gt_joints, camera, image_path, img_folder, viz=False, path=None):
-    exp = 0
+    exp = 1
     if len(verts) < 1:
         return
     if True:
         from core.utils.render import Renderer
-
         for v, (cam, gt_joint_ids, img_path) in enumerate(zip(camera, gt_joints, image_path)):
             if v > 0 and exp:
                 break
-            serial, cam_n, fn = img_path.split('\\')[-3:]
             intri = np.eye(3)
             rot = cam.rotation.detach().cpu().numpy()
             trans = cam.translation.detach().cpu().numpy()
@@ -337,17 +336,17 @@ def project_to_img(joints, verts, faces, gt_joints, camera, image_path, img_fold
             render = Renderer(resolution=(img.shape[1], img.shape[0]))
             img = render.render_multiperson(verts, faces, rot_mat.copy(), trans.copy(), intri.copy(), img.copy(), viz=False)
 
-            for i, gt_joint in enumerate(gt_joint_ids):
-                # if i != 0 and i != 1:
-                #     continue
-                color = [(0,0,255),(0,255,255),(255,0,0),(255,255,0),(255,0,255),(148,148,255)]
-                if gt_joint is not None and True:
-                    for p in gt_joint:
-                        cv2.circle(img, (int(p[0]),int(p[1])), 3, color[i], 10)
-            img_out_folder = os.path.join(path, serial, cam_n)
-            if not os.path.exists(img_out_folder):
-                os.makedirs(img_out_folder)
-            cv2.imwrite(os.path.join(img_out_folder, '%s' %fn), img)
+            # for i, gt_joint in enumerate(gt_joint_ids):
+            #     # if i != 0 and i != 1:
+            #     #     continue
+            #     color = [(0,0,255),(0,255,255),(255,0,0),(255,255,0),(255,0,255),(148,148,255)]
+            #     if gt_joint is not None and True:
+            #         for p in gt_joint:
+            #             cv2.circle(img, (int(p[0]),int(p[1])), 3, color[i], 10)
+            img_out_file = os.path.join(path, img_path)
+            if not os.path.exists(os.path.dirname(img_out_file)):
+                os.makedirs(os.path.dirname(img_out_file))
+            cv2.imwrite(img_out_file, img)
             render.renderer.delete()
             del render
     else:
@@ -383,12 +382,9 @@ def save_results(setting, data, result, dataset_obj,
                 use_motionprior=True, 
                 save_meshes=False, save_images=False, frames_seq=1,
                 **kwargs):
-    model_type=kwargs.get('model_type', 'smpl')
     vposer = setting['vposer']
     models = setting['model']
     camera = setting['cameras']
-    # serial = data['serial']
-    # fn = data['fn']
     img_path = data['img_path']
     keypoints = data['keypoints']
     flags = data['flags'].T
@@ -402,83 +398,39 @@ def save_results(setting, data, result, dataset_obj,
             pose_embedding = model_results['pose_embedding']
             body_pose = vposer.decode(
                     pose_embedding, output_type='aa').view(frames_seq, -1) if use_vposer else None
-            # the parameters of foot and hand are from vposer
-            # we do not use this inaccurate results
-            body_pose[:,-6:] = 0.
-            if False:
-                body_pose[:,18:24] = 0.
-                body_pose[:,27:33] = 0.
-                body_pose[:,57:] = 0.
-            model_results['body_pose'] = body_pose.detach().cpu().numpy()
-            orient = np.array(models[idx].global_orient.detach().cpu().numpy())
-            temp_pose = body_pose.detach().cpu().numpy()
-            pose = np.hstack((orient,temp_pose))
-            model_results['pose'] = pose
-            model_results['pose_embedding'] = pose_embedding.detach().cpu().numpy()
         elif use_motionprior:
             pose_embedding = model_results['pose_embedding']
-
-            # from utils.visualization3d import Visualization
-            # viz_tool = Visualization()
-            # test = pose_embedding.detach().cpu().numpy()[:,:30].reshape(-1,3)
-            # while True:
-            #     # viz_tool.visualize_joints(filtered_joints[:200])
-            #     viz_tool.visualize_points(test, None)
-
             body_pose = vposer.decode(
                         pose_embedding, t=frames_seq).view(
                             frames_seq, -1)
-            # the parameters of foot and hand are from vposer
-            # we do not use this inaccurate results
-            body_pose[:,-6:] = 0.
-            if False:
-                body_pose[:,18:24] = 0.
-                body_pose[:,27:33] = 0.
-                body_pose[:,57:] = 0.
-            model_results['body_pose'] = body_pose.detach().cpu().numpy()
-            orient = np.array(models[idx].global_orient.detach().cpu().numpy())
-            temp_pose = body_pose.detach().cpu().numpy()
-            pose = np.hstack((orient,temp_pose))
-            model_results['pose'] = pose
-            model_results['pose_embedding'] = pose_embedding.detach().cpu().numpy()
-        else:
-            if False:
-                model_results['body_pose'][:,18:24] = 0.
-                model_results['body_pose'][:,27:33] = 0.
-                model_results['body_pose'][:,57:] = 0.
-            pose = np.hstack((model_results['global_orient'],model_results['body_pose']))
-            model_results['pose'] = pose
+        # the parameters of foot and hand are from vposer
+        # we do not use this inaccurate results
+        body_pose[:,-6:] = 0.
+        model_results['body_pose'] = body_pose.detach().cpu().numpy()
+        orient = np.array(models[idx].global_orient.detach().cpu().numpy())
+        pose = np.hstack((orient, model_results['body_pose']))
+        model_results['pose'] = pose
+        model_results['pose_embedding'] = pose_embedding.detach().cpu().numpy()
 
         result['person%02d' %idx] = model_results
 
         if save_meshes or save_images:
-            if save_meshes or save_images:
-                if (not use_vposer) and (not use_motionprior):
-                    body_pose = models[idx].body_pose.detach()
-                    # body_pose[:,18:24] = 0.
-                    # body_pose[:,27:33] = 0.
-                    # body_pose[:,57:] = 0.
-                model_output = models[idx](return_verts=True, body_pose=body_pose)
-
-        model_outputs.append(model_output)
+            model_output = models[idx](return_verts=True, body_pose=body_pose)
+            model_outputs.append(model_output)
 
     for i, name in enumerate(names):
         # name of output
-        serial, cam, fn = name.split('\\')[-3:]
+        if platform.system() == 'Windows':
+            serial, cam, fn = name.split('\\')[-3:]
+        else:
+            serial, cam, fn = name.split('/')[-3:]
         fn = fn.split('.')[0]
-
         frame_results = {}
         meshes, joints = [], []
         for idx in range(dataset_obj.num_people):
-            # if flags[idx][i] < 1:
-            #     continue
             model_results = result['person%02d' %idx]
             if use_vposer or use_motionprior:
                 frame_result = dict(betas=model_results['betas'], scale=model_results['scale'], loss=model_results['loss'], global_orient=model_results['global_orient'][i], transl=model_results['transl'][i], pose_embedding=model_results['pose_embedding'][i], body_pose=model_results['body_pose'][i], pose=model_results['pose'][i], )
-                frame_results['person%02d' %idx] = frame_result
-            else:
-                # To do...
-                frame_result = dict(betas=model_results['betas'], scale=model_results['scale'], loss=model_results['loss'], global_orient=model_results['global_orient'][i], transl=model_results['transl'][i], pose_embedding=model_results['pose_embedding'], body_pose=model_results['body_pose'][i], pose=model_results['pose'][i], )
                 frame_results['person%02d' %idx] = frame_result
 
             if save_meshes:
@@ -503,11 +455,6 @@ def save_results(setting, data, result, dataset_obj,
         curr_result_fn = osp.join(setting['result_folder'], serial)
         if not osp.exists(curr_result_fn):
             os.makedirs(curr_result_fn)
-        # for n, idx in enumerate(frame_results):
-        #     dat = frame_results[idx]
-        #     if flags[n][i] < 1:
-        #         dat = None
-        #     frame_results[idx] = dat
         result_fn = osp.join(curr_result_fn, '%s.pkl' %fn)
         with open(result_fn, 'wb') as result_file:
             pickle.dump(frame_results, result_file, protocol=2)
@@ -516,9 +463,6 @@ def save_results(setting, data, result, dataset_obj,
         if save_images:
             img_p = [img_path[v][i] for v in range(len(data['img_path']))]
             keyp_p = [keypoints[v][i] for v in range(len(data['img_path']))]
-
-            # body_joints = model_output.joints[i]
-            # verts = model_output.vertices[i]
             project_to_img(joints, meshes, faces, keyp_p, camera, img_p, dataset_obj.img_folder, viz=True, path=setting['img_folder'])
 
 
