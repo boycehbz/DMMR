@@ -1,13 +1,14 @@
 # \[3DV2021\] Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras (DMMR)
 The code for 3DV 2021 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras"<br>
-\[[Paper]\](https://arxiv.org/pdf/2110.10355.pdf)  \[[Video]\](https://www.bilibili.com/video/BV1Qq4y1d78S)
+\[[Paper](https://arxiv.org/pdf/2110.10355.pdf)\]  \[[Video](https://www.bilibili.com/video/BV1Qq4y1d78S)\]
 
+![figure](/images/teaser.jpg)
 ![figure](/images/video.gif)
 
 ## Dependencies
 Windows or Linux, Python3
 
-```conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch```<br>
+```conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch```<br>
 ```pip install -r requirements.txt```
 
 
