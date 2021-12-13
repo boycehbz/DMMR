@@ -1,6 +1,13 @@
+'''
+ @FileName    : MotionVAE_HP.py
+ @EditTime    : 2021-12-13 15:42:47
+ @Author      : Buzhen Huang
+ @Email       : hbz@seu.edu.cn
+ @Description : 
+'''
+
 import os
 import sys
-
 import time
 import numpy as np
 from tqdm import tqdm

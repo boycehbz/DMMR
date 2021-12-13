@@ -8,7 +8,7 @@ import cv2
 # from .vis_base import plot_bbox, plot_keypoints, merge
 # from .file_utils import write_keypoints3d, write_smpl, mkout, mkdir
 
-# from core.utils.utils import get_rgb
+from core.utils.module_utils import get_rgb
 
 skeletons = {'coco17':[[0,1],[1,3],[0,2],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[11,13],[13,15],[6,12],[12,14],    [14,16],[11,12]],
             'MHHI':[[0,1],[1,2],[3,4],[4,5],[0,6],[3,6],[6,13],[13,7],[13,10],[7,8],[8,9],[10,11],[11,12]],
@@ -63,7 +63,7 @@ class FileWriter:
                 img = cv2.imread(os.path.join(self.dataset_dir, 'images', images[nv][nf]))
                 keypoints = lDetections[nv][nf]
                 for pid, keyp in enumerate(keypoints):
-                    if keyp is None:
+                    if keyp is None or keyp[:,2].max() < 0.1:
                         continue
                     # if pid > 2:
                     #     continue

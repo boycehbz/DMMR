@@ -1,3 +1,11 @@
+'''
+ @FileName    : VPoser.py
+ @EditTime    : 2021-12-13 15:43:38
+ @Author      : Buzhen Huang
+ @Email       : hbz@seu.edu.cn
+ @Description : 
+'''
+
 import torch
 from torch import nn, optim
 import numpy as np

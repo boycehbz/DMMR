@@ -1,3 +1,11 @@
+'''
+ @FileName    : render.py
+ @EditTime    : 2021-12-13 15:44:45
+ @Author      : Buzhen Huang
+ @Email       : hbz@seu.edu.cn
+ @Description : 
+'''
+
 import numpy as np
 from numpy.lib.type_check import imag
 import trimesh

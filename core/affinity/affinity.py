@@ -44,8 +44,11 @@ def SimpleConstrain(dimGroups):
 class ComposedAffinity:
     def __init__(self, cameras):
         affinity = {}
-        affinity['ray'] = Geo_Affinity(cameras, 0.15)  # 0.1
-        affinity['phy'] = Phy_Affinity(cameras, 0.3)  # 0.2
+        # It may be sensitive to the size of the scene
+        # More robust implementation, TODO...
+        affinity['ray'] = Geo_Affinity(cameras, 0.3)  # 0.1
+        affinity['phy'] = Phy_Affinity(cameras, 0.5)  # 0.2
+
         # affinity['kin'] = Kin_Affinity(cameras, 0.5)  # 0.2
         # affinity['pos'] = Pos_Affinity(cameras, 30)  # 0.2
         # affinity['app'] = App_Affinity(cameras, 0.5)  # 0.2

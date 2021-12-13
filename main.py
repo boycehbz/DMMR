@@ -22,7 +22,7 @@ def main(**args):
 
     results = {}
     for idx, data in enumerate(dataset_obj):
-        if data['count'] < 1: # empty files
+        if data['count'] < 1: # empty file
             continue
         print('Processing: {}'.format(data['img_path'][0][0]))
         
