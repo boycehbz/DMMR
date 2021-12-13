@@ -24,7 +24,7 @@ from collections import namedtuple
 import torch
 import torch.nn as nn
 
-from smplx.lbs import transform_mat
+from core.smplx.lbs import transform_mat
 import torchgeometry as tgm
 from torch.nn import functional as F
 
