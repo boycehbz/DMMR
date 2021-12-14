@@ -8,7 +8,7 @@ The code for 3DV 2021 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrate
 ![figure](/images/video.gif)
 
 ## Dependencies
-Windows or Linux, Python3
+Windows or Linux, Python3.7
 
 ```conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch```<br>
 ```pip install -r requirements.txt```
