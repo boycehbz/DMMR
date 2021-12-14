@@ -11,3 +11,4 @@ configer
 trimesh
 open3d==0.9.0
 chumpy
+pyrender==0.1.45

@@ -1,5 +1,6 @@
 # \[3DV2021\] Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras (DMMR)
 The code for 3DV 2021 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras"<br>
+Buzhen Huang, Yuan Shu, Tianshu Zhang, Yangang Wang<br>
 \[[Paper](https://arxiv.org/pdf/2110.10355.pdf)\]  \[[Video](https://www.bilibili.com/video/BV1Qq4y1d78S)\]
 
 ![figure](/images/teaser.jpg)
@@ -63,7 +64,7 @@ If you find this code useful for your research, please consider citing the paper
 ```
 
 ## Acknowledgments
-Some of the code are based on the following works. We gratefully appreciate the impact it had on our work.<br>
+Some of the code are based on the following works. We gratefully appreciate the impact it has on our work.<br>
 [SMPLify-x](https://github.com/vchoutas/smplify-x)<br>
 [SPIN](https://github.com/nkolot/SPIN)<br>
 [EasyMocap](https://github.com/zju3dv/EasyMocap)<br>
