@@ -20,7 +20,7 @@ Windows or Linux, Python3.7
 Download the official SMPL model from [SMPLify website](http://smplify.is.tuebingen.mpg.de/) and put it in ```models/smpl```. (see [models/smpl/readme.txt](./models/smpl/readme.txt))<br>
 
 **Step2:**<br>
-Download the test data and trained motion prior from [here](https://pan.baidu.com/s/1jHXXp7xuPAYWoivD60gPdA) (**extraction code \[jomn\]**) and put them in ```data```.<br>
+Download the test data and trained motion prior from [Google Drive](https://drive.google.com/file/d/1JyHiTfeHTqKJW6fvtNec983fF25VdPit/view) or [Baidu Netdisk](https://pan.baidu.com/s/1jHXXp7xuPAYWoivD60gPdA) (**extraction code \[jomn\]**) and put them in ```data```.<br>
 
 **Step3:**<br>
 Run 
