@@ -552,6 +552,7 @@ def extris_est(spin, data, data_folder, intris):
     keypoints = data['keypoints']
     frame_length = len(img_path[0])
     idx = 0
+    threshold = 0.4
     for f in range(frame_length):
         ious = []
         extris = []
@@ -608,14 +609,16 @@ def extris_est(spin, data, data_folder, intris):
                 del render
 
         ious = np.array(ious)
-        if ious.min() > 0.4:
+        if ious.min() > threshold:
             break
 
+    assert len(ious) > 0, "Improper threshold, turn down the threshold"
+    
     if False:
         from core.utils.render import Renderer
         for i in range(len(extris)):
             # from utils.utils import joint_projection, surface_projection
-            img = cv2.imread(os.path.join(data_folder, 'images', data['img_path'][i][0]))
+            img = cv2.imread(os.path.join(data_folder, 'images', data['img_path'][i][f]))
             render = Renderer(resolution=(img.shape[1], img.shape[0]))
             img = render(ref_mesh, spin.smpl.faces, extris[i][:3,:3].copy(), extris[i][:3,3].copy(), intris[i].copy(), img.copy(), color=[1,1,0.9], viz=False)
             render.vis_img("img", img)
