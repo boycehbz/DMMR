@@ -467,7 +467,7 @@ def save_results(setting, data, result, dataset_obj,
 
 
     if kwargs.get('opt_cam'):
-        cam_out = os.path.join('output/cameras', serial)
+        cam_out = os.path.join(setting['cam_folder'], serial)
         if not osp.exists(cam_out):
             os.makedirs(cam_out)
         cam_out = osp.join(cam_out, '%s.txt' %fn)

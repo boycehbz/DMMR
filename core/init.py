@@ -104,6 +104,10 @@ def init(**kwarg):
     if not osp.exists(mesh_folder):
         os.makedirs(mesh_folder)
 
+    out_cam_folder = osp.join(output_folder, 'camparams')
+    if not osp.exists(out_cam_folder) and kwarg.get('opt_cam'):
+        os.makedirs(out_cam_folder)
+
     out_img_folder = osp.join(output_folder, 'images')
     if not osp.exists(out_img_folder):
         os.makedirs(out_img_folder)
@@ -181,6 +185,7 @@ def init(**kwarg):
     setting['shape_prior'] = shape_prior
     setting['angle_prior'] = angle_prior
     setting['img_folder'] = out_img_folder
+    setting['cam_folder'] = out_cam_folder
     setting['result_folder'] = result_folder
     setting['mesh_folder'] = mesh_folder
 
