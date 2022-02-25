@@ -21,6 +21,15 @@ class Visualization(object):
         )
         self.count = 0
 
+    def visualize_meshes(self, pathes):
+        for path in pathes:
+            mesh = o3d.io.read_triangle_mesh(path)
+            self.viewer.add_geometry(mesh)
+            mesh.compute_vertex_normals()
+            mesh.paint_uniform_color([0.5, 0.5, 0.5])
+            self.viewer.update_geometry(mesh)
+            self.viewer.poll_events()
+
     def visualize_cameras(self, points, color, viz=True):
         point_cloud1 = o3d.geometry.PointCloud()
         point_cloud2 = o3d.geometry.PointCloud()
