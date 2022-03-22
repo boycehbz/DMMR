@@ -124,15 +124,16 @@ def non_linear_solver(
             body_param = list(model.parameters())
             body_params += list(
             filter(lambda x: x.requires_grad, body_param))
-            if vposer is not None:
+            if vposer is not None and opt_idx in [1,2,3]:
                 body_params.append(pose_embedding)
         final_params = list(
             filter(lambda x: x.requires_grad, body_params))
-        for cam in cameras:
-            if cam.translation.requires_grad:
-                final_params.append(cam.translation)
-            if cam.rotation.requires_grad:
-                final_params.append(cam.rotation)
+        if opt_idx in [0,2,3]:
+            for cam in cameras:
+                if cam.translation.requires_grad:
+                    final_params.append(cam.translation)
+                if cam.rotation.requires_grad:
+                    final_params.append(cam.rotation)
         body_optimizer, body_create_graph = optim_factory.create_optimizer(
             final_params, **kwargs)
         body_optimizer.zero_grad()

@@ -49,8 +49,8 @@ body_pose_prior_weights:
     # - 2.74e2
     # - 3.78e1
     - 4.04e3
-    - 4.04e2
-    - 57.4e0
+    - 1.78e0
+    - 1.78e0
     - 1.78e0
 shape_weights:
     - 1.0e2
