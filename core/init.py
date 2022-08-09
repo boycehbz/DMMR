@@ -50,11 +50,11 @@ def load_model(dataset_obj, setting, **kwarg):
     # load vposer
     vposer = None
     if kwarg.get('use_vposer'):
-        vposer = load_vposer()
+        vposer = load_vposer(device)
         vposer = vposer.to(device=device)
         vposer.eval()
     elif kwarg.get('use_motionprior'):
-        vposer = load_motionpriorHP()
+        vposer = load_motionpriorHP(device)
         vposer = vposer.to(device=device)
         vposer.eval()
 

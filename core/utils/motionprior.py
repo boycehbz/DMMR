@@ -58,7 +58,7 @@ def load_motionprior(expr_dir, vp_model='snapshot'):
 
     return vposer_pt
 
-def load_motionpriorHP():
+def load_motionpriorHP(device):
     import importlib
     import os
     import torch
@@ -70,7 +70,7 @@ def load_motionpriorHP():
     vposer_pt = MotionVAE_HP(latentD=32)
 
     model_dict = vposer_pt.state_dict()
-    premodel_dict = torch.load(trained_model_fname)['model'] #.state_dict()
+    premodel_dict = torch.load(trained_model_fname, map_location=device)['model'] #.state_dict()
     premodel_dict = {k: v for k ,v in premodel_dict.items() if k in model_dict}
     model_dict.update(premodel_dict)
     vposer_pt.load_state_dict(model_dict)

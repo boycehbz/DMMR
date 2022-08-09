@@ -16,7 +16,7 @@ class SPIN(nn.Module):
         super(SPIN, self).__init__()
         # Load pretrained model
         self.model = hmr('data/smpl_mean_params.npz').to(device)
-        checkpoint = torch.load('data/spin_checkpoint.pt')
+        checkpoint = torch.load('data/spin_checkpoint.pt', map_location=device)
         self.model.load_state_dict(checkpoint['model'], strict=False)
 
         # Load SMPL model

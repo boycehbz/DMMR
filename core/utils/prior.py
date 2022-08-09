@@ -26,7 +26,7 @@ def expid2model(expr_dir):
 
     return best_model_fname
 
-def load_vposer():
+def load_vposer(device):
     import importlib
     import os
     import torch
@@ -41,7 +41,7 @@ def load_vposer():
     vposer_pt = VPoser(num_neurons=num_neurons, latentD=latentD, data_shape=data_shape)
 
     model_dict = vposer_pt.state_dict()
-    premodel_dict = torch.load(trained_model_fname)
+    premodel_dict = torch.load(trained_model_fname, map_location=device)
     premodel_dict = {k: v for k ,v in premodel_dict.items() if k in model_dict}
     model_dict.update(premodel_dict)
     vposer_pt.load_state_dict(model_dict)
