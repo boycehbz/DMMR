@@ -342,13 +342,14 @@ class SMPLifyLoss(nn.Module):
             #     global_smooth_loss += diff_rots
 
             kinetic_loss = 0.
-            velocity = body_model_output.joints[1:] -  body_model_output.joints[:-1]
-            velocity = torch.norm(velocity, dim=-1).pow(2)
-            kinetic_loss = velocity.sum() * self.kinetic_weight
-            kinetic_loss += torch.norm(body_model_output.joints[0] -  body_model_output.joints[1], dim=-1).sum() * self.kinetic_weight
-            kinetic_loss = kinetic_loss / frames
-            loss_dict['kinetic'] += int(kinetic_loss.data)
-
+            if body_model_output.joints.shape[0] > 1:
+                velocity = body_model_output.joints[1:] -  body_model_output.joints[:-1]
+                velocity = torch.norm(velocity, dim=-1).pow(2)
+                kinetic_loss = velocity.sum() * self.kinetic_weight
+                kinetic_loss += torch.norm(body_model_output.joints[0] -  body_model_output.joints[1], dim=-1).sum() * self.kinetic_weight
+                kinetic_loss = kinetic_loss / frames
+                loss_dict['kinetic'] += int(kinetic_loss.data)
+            
             pen_loss = 0.0
             # Calculate the loss due to interpenetration
             if (self.interpenetration and self.coll_loss_weight.item() > 0):

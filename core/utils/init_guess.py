@@ -174,10 +174,13 @@ def init_guess(setting, data, dataset_obj, frames_seq=1, use_torso=False, **kwar
         rec_joints3ds = init_rec_joints[idx]
         model_joint3ds = init_SMPL_joints[idx]
         rotations, translations = [], []
-
-        # Filter out noisy reconstrction with Butterworth Filter
-        b, a = signal.butter(3, 0.05, 'lowpass')
-        filtered_joints = signal.filtfilt(b, a, rec_joints3ds.T).T.copy()
+        
+        if rec_joints3ds.shape[0] >= 12:
+            # Filter out noisy reconstrction with Butterworth Filter
+            b, a = signal.butter(3, 0.05, 'lowpass')
+            filtered_joints = signal.filtfilt(b, a, rec_joints3ds.T).T.copy()
+        else:
+            filtered_joints = rec_joints3ds
 
         # Calculate the global rotations and translations for SMPL models
         for joints, joints3d in zip(model_joint3ds, filtered_joints):
