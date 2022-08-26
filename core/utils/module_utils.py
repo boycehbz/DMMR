@@ -444,7 +444,7 @@ def save_results(setting, data, result, dataset_obj,
                 out_mesh.export(mesh_fn)
 
             if save_images:
-                if flags[idx][i] < 0:
+                if flags[idx][i] < 1:
                     meshes.append(None)
                     joints.append(None)
                 else:
