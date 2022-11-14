@@ -18,10 +18,7 @@ import torch
 import torch.nn as nn
 import os.path as osp
 import os
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+import pickle
 import cv2
 from copy import deepcopy
 from core.utils.camera import create_camera

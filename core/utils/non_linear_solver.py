@@ -10,26 +10,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import division
 
-
 import time
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
-import sys
-import os
-
 import numpy as np
 import torch
-
 from tqdm import tqdm
-
-from collections import defaultdict
-
-import cv2
-import PIL.Image as pil_img
-
 from core.optimizers import optim_factory
 
 from core.utils import fitting

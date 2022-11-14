@@ -48,17 +48,17 @@ class Renderer:
             point_size=1.0)
 
         # set the scene
-        self.scene = pyrender.Scene(bg_color=[0.0, 0.0, 0.0, 0.0], ambient_light=(0.3, 0.3, 0.3))
-        self.colors = {
-            'red': [.8, .1, .1],
-            'bule': [.1, .1, .8], #[.7, .7, .6],#
-            'green': [.1, .8, .1],
+        self.scene = pyrender.Scene(bg_color=[0.0, 0.0, 0.0, 0.0], ambient_light=(0.1, 0.1, 0.1))
+        self.colors = [
+            [.8, .1, .1], #'red': 
+            [.1, .1, .8], #'bule': 
+            [.1, .8, .1], #'green': 
 
-            'pink': [.7, .7, .9],
-            'neutral': [.9, .9, .8], #[.7, .7, .6],#
-            'capsule': [.7, .75, .5],
-            'yellow': [.5, .7, .75],
-        }
+            [.7, .7, .9], #'pink':
+            [.9, .9, .8], #'neutral': 
+            [.7, .75, .5], #'capsule': 
+            [.5, .7, .75], #'yellow': 
+        ]
         # self.renderer = pyrender.Viewer(self.scene, use_raymond_lighting=True, viewport_size=(1000,1000), cull_faces=False, run_in_thread=True)
 
     def Extrinsic_to_ModelViewMatrix(self, extri):
@@ -140,8 +140,6 @@ class Renderer:
         # self.add_points_light(10, bbox=mesh.bounds)
         light_nodes = self.use_raymond_lighting(15, trans=mesh.centroid - (mesh.centroid-camera_pose[:3,3]) * 0.6)
 
-
-
         if self.wireframe:
             render_flags = RenderFlags.RGBA | RenderFlags.ALL_WIREFRAME
         else:
@@ -167,16 +165,17 @@ class Renderer:
         return image
 
     def render_multiperson(self, verts, faces, rotation, trans, intri, img=None, viz=False):
-        # assert len(verts) < 5
         # Add mesh
         mesh_nodes = []
         mesh_bounds = []
-        for i, (vert, color) in enumerate(zip(verts, self.colors)):
+        for i, vert in enumerate(verts):
+            color = i % len(self.colors)
+            color = self.colors[color]
+
             if vert is None:
                 continue
             else:
                 vert = vert.detach().cpu().numpy()
-            color = self.colors[color]
             mesh = trimesh.Trimesh(vertices=vert, faces=faces, process=False)
             material = pyrender.MetallicRoughnessMaterial(
                 metallicFactor=0,
@@ -200,9 +199,10 @@ class Renderer:
         top = np.mean(mesh_bounds[:,0,:], axis=0)
         bottom = np.mean(mesh_bounds[:,1,:], axis=0)
         pos = (top + bottom) / 2
+
         # Add light
         # self.add_points_light(10, bbox=mesh.bounds)
-        light_nodes = self.use_raymond_lighting(15, trans=pos-np.array([0,0,3]))
+        # light_nodes = self.use_raymond_lighting(15, trans=pos-np.array([0,0,3]))
 
         # Add cameras
         camera = pyrender.IntrinsicsCamera(fx=intri[0][0], fy=intri[1][1], cx=intri[0][2], cy=intri[1][2], zfar=8000)
@@ -212,6 +212,14 @@ class Renderer:
         camera_pose[:3,3] = trans
         camera_pose = self.Extrinsic_to_ModelViewMatrix(camera_pose)
         cam_node = self.scene.add(camera, pose=camera_pose)
+
+        # Create light source
+        light = pyrender.DirectionalLight(color=[1.0, 1.0, 1.0], intensity=3.0)
+        # for DirectionalLight, only rotation matters
+        light_pose = trimesh.transformations.rotation_matrix(np.radians(-45), [1, 0, 0])
+        self.scene.add(light, pose=np.dot(camera_pose, light_pose))
+        light_pose = trimesh.transformations.rotation_matrix(np.radians(45), [0, 1, 0])
+        self.scene.add(light, pose=np.dot(camera_pose, light_pose))
 
         if self.wireframe:
             render_flags = RenderFlags.RGBA | RenderFlags.ALL_WIREFRAME
@@ -234,8 +242,8 @@ class Renderer:
         for n in mesh_nodes:
             self.scene.remove_node(n)
         self.scene.remove_node(cam_node)
-        for n in light_nodes:
-            self.scene.remove_node(n)
+        # for n in light_nodes:
+        #     self.scene.remove_node(n)
         return image
 
     def _add_raymond_light(self, trans):
