@@ -1,6 +1,6 @@
 # \[3DV2021\] Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras (DMMR)
 The code for 3DV 2021 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras"<br>
-Buzhen Huang, Yuan Shu, Tianshu Zhang, Yangang Wang<br>
+[Buzhen Huang](http://www.buzhenhuang.com/), Yuan Shu, Tianshu Zhang, [Yangang Wang](https://www.yangangwang.com/)<br>
 \[[Paper](https://arxiv.org/pdf/2110.10355.pdf)\]  \[[Video](https://www.bilibili.com/video/BV1Qq4y1d78S)\]
 
 ![figure](/images/teaser.jpg)
