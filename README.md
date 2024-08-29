@@ -1,6 +1,6 @@
 # \[3DV2021\] Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras (DMMR)
 The code for 3DV 2021 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras"<br>
-[Buzhen Huang](http://www.buzhenhuang.com/), Yuan Shu, Tianshu Zhang, [Yangang Wang](https://www.yangangwang.com/)<br>
+[Buzhen Huang](http://www.buzhenhuang.com/), [Yuan Shu](https://scholar.google.com/citations?hl=zh-CN&user=hkvxsI8AAAAJ), [Tianshu Zhang](https://scholar.google.com/citations?user=S5M_CncAAAAJ&hl=zh-CN), [Yangang Wang](https://www.yangangwang.com/)<br>
 \[[Paper](https://arxiv.org/pdf/2110.10355.pdf)\]  \[[Video](https://www.bilibili.com/video/BV1Qq4y1d78S)\]
 
 ![figure](/images/teaser.jpg)
@@ -55,6 +55,13 @@ python viz_cameras.py
 ## Citation
 If you find this code useful for your research, please consider citing the paper.
 ```
+@article{huang2023simultaneously,
+  title={Simultaneously Recovering Multi-Person Meshes and Multi-View Cameras with Human Semantics},
+  author={Huang, Buzhen and Ju, Jingyi and Shu, Yuan and Wang, Yangang},
+  journal={IEEE Transactions on Circuits and Systems for Video Technology},
+  year={2023},
+  publisher={IEEE}
+}
 @inproceedings{huang2021dynamic,
       title={Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras}, 
       author={Buzhen Huang and Yuan Shu and Tianshu Zhang and Yangang Wang},
