@@ -31,8 +31,8 @@ float_dtype: "float32"
 gender: neutral # male female neutral
 
 #prior related
-use_vposer: false  # Vposer
-use_motionprior: true # MotionPrior
+use_vposer: true  # Vposer
+use_motionprior: false # MotionPrior
 
 prior_folder: 'priors'
 body_prior_type: 'l2'
