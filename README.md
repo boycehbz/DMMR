@@ -1,5 +1,5 @@
 # \[3DV2021\] Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras (DMMR)
-The code for 3DV 2021 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras"<br>
+The code for 3DV 2021/TCSVT 2024 paper "Dynamic Multi-Person Mesh Recovery From Uncalibrated Multi-View Cameras"<br>
 [Buzhen Huang](http://www.buzhenhuang.com/), [Yuan Shu](https://scholar.google.com/citations?hl=zh-CN&user=hkvxsI8AAAAJ), [Tianshu Zhang](https://scholar.google.com/citations?user=S5M_CncAAAAJ&hl=zh-CN), [Yangang Wang](https://www.yangangwang.com/)<br>
 \[[Paper](https://arxiv.org/pdf/2110.10355.pdf)\]  \[[Video](https://www.bilibili.com/video/BV1Qq4y1d78S)\]
 
@@ -42,6 +42,12 @@ The code can also be used for motion capture with known cameras:<br>
 python main.py --config cfg_files/fit_smpl.yaml --opt_cam false
 ```
 
+## Run on your own data
+Download the preprocessing models from [Baidu Netdisk](https://pan.baidu.com/s/1npDv_mLrFaG7AnUCgemQpA?pwd=tx6y).
+```bash
+python predict_keypoints.py --images_root YOUR_PATH
+```
+Move the predicted keypoints from the ```output/``` directory to the ```data/``` folder:
 
 ## Results
 The fitted results will be saved in ```output```.<br>
@@ -59,7 +65,7 @@ If you find this code useful for your research, please consider citing the paper
   title={Simultaneously Recovering Multi-Person Meshes and Multi-View Cameras with Human Semantics},
   author={Huang, Buzhen and Ju, Jingyi and Shu, Yuan and Wang, Yangang},
   journal={IEEE Transactions on Circuits and Systems for Video Technology},
-  year={2023},
+  year={2024},
   publisher={IEEE}
 }
 @inproceedings{huang2021dynamic,
