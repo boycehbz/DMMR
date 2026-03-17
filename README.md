@@ -43,6 +43,7 @@ python main.py --config cfg_files/fit_smpl.yaml --opt_cam false
 ```
 
 ## Run on your own data
+The following script can perform cross-view association and 2D keypoint estimation on your own multi-view images.
 Download the preprocessing models from [Baidu Netdisk](https://pan.baidu.com/s/1npDv_mLrFaG7AnUCgemQpA?pwd=tx6y).
 ```bash
 python predict_keypoints.py --images_root YOUR_PATH
